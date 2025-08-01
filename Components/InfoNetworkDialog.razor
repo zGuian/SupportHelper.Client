@@ -1,0 +1,51 @@
+﻿<MudDialog>
+    <TitleContent>
+        Informações de rede
+    </TitleContent>
+    <DialogContent>
+        @foreach(var item in NetworkBoards)
+        {
+            <MudGrid>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudField Label="Em Uso" Variant="Variant.Text">@item.InUse</MudField>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4">
+                    <MudField Label="Descrição" Variant="Variant.Text">@item.Description</MudField>
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="6" sm="3">
+                    <MudField Label="IPV4" Variant="Variant.Text">@item.Ipv4</MudField>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudField Label="MacAddress" Variant="Variant.Text">@item.MacAddress</MudField>
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudField Label="IPV6" Variant="Variant.Text">@item.Ipv6</MudField>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    #region Values Dialog
+    [Parameter]
+    public IEnumerable<NetworkBoard> NetworkBoards { get; set; } = [];
+
+    #endregion Values Dialog
+
+    #region Dialog
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+
+    #endregion Dialog
+}

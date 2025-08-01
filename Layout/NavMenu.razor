@@ -1,0 +1,13 @@
+﻿<div class="d-flex align-center justify-center">
+    <h4>Menu</h4>
+</div>
+
+<MudNavMenu Color="Color.Primary">
+    <MudNavLink Href="" Icon="@Icons.Material.Filled.Home" Match="NavLinkMatch.All">Home</MudNavLink>
+    <MudNavLink Href="dashboard" Icon="@Icons.Material.Filled.BarChart" Disabled="true">Dashboard</MudNavLink>
+    <MudNavLink Href="operation" Icon="@Icons.Material.Filled.Build">Operação</MudNavLink>
+    <MudNavGroup Title="Administração" Expanded="false" Icon="@Icons.Material.Filled.Folder" Disabled="true">
+        <MudNavLink Href="" Icon="@Icons.Material.Filled.ManageAccounts">Usuário</MudNavLink>
+    </MudNavGroup>
+    <MudNavLink Href="/about" Icon="@Icons.Material.Filled.Article" Match="NavLinkMatch.Prefix">Sobre</MudNavLink>
+</MudNavMenu>

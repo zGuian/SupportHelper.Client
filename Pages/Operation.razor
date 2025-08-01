@@ -1,0 +1,119 @@
+﻿@inject IMachineServices _services;
+@inject IDialogService _dialog;
+@inject NavigationManager _navigation;
+
+@page "/operation"
+
+<MudTable Items="@Machines" 
+          Filter="new Func<MachineDto, bool>(FilterFunc1)" Row>
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Maquinas</MudText>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Conectada</MudTh>
+        <MudTh>Hostname</MudTh>
+        <MudTh>Usuario</MudTh>
+        <MudTh>Dominio</MudTh>
+        <MudTh>Tempo ativo</MudTh>
+        <MudTh></MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Connected">@context.IsConnected</MudTd>
+        <MudTd DataLabel="Hostname">@context.Hostname</MudTd>
+        <MudTd DataLabel="User">@context.CurrentUsername</MudTd>
+        <MudTd DataLabel="Domain">@context.DomainName</MudTd>
+        <MudTd DataLabel="UpTime">@context.UpTime</MudTd>
+        <MudTd DataLabel="Network">
+            <MudButton OnClick="((e) => OpenDialogNetworkAsync(context.NetworkBoards))" 
+                        Size="Size.Small" 
+                        Variant="Variant.Filled"
+                        StartIcon="@Icons.Material.Filled.NetworkCheck">
+                Rede
+            </MudButton>
+        </MudTd>
+        <MudTd>
+            <MudButton OnClick="((e) => OpenDialogCommandAsync(context.Hostname))"
+                        Size="Size.Small" 
+                        Variant="Variant.Filled" 
+                        Color="Color.Primary"
+                        StartIcon="@Icons.Material.Filled.Monitor">
+                Comando
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private string _pageCommand = "/command";
+
+    #region Table
+    private IEnumerable<MachineDto>? Machines = [];
+    private string searchString1 = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = _services.RequestGetAllMachineAsync(1, 1);
+        if (!response.IsSuccess)
+        {
+
+        }
+        Machines = response.Data;
+    }
+
+    private bool FilterFunc1(MachineDto element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(MachineDto machine, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (machine.Hostname.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (machine.DomainName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+    #endregion Table
+
+    #region Dialog
+    private async Task OpenDialogNetworkAsync(IEnumerable<NetworkBoard> networkBoards)
+    {
+        var parameters = new DialogParameters<InfoNetworkDialog>
+        {
+            { x => x.NetworkBoards, networkBoards }
+        };
+
+        var options = new DialogOptions()
+        {
+            MaxWidth = MaxWidth.Medium,
+            FullWidth = true,
+            FullScreen = false,
+            Position = DialogPosition.Center,
+        };
+        await _dialog.ShowAsync<InfoNetworkDialog>("InfosNetwork", parameters, options);
+    }
+
+    private async Task OpenDialogCommandAsync(string id)
+    {
+        var parameters = new DialogParameters<CommandDialog>
+        {
+            { x => x.Id, id }
+        };
+
+        var options = new DialogOptions()
+        {
+            MaxWidth = MaxWidth.ExtraExtraLarge,
+            FullWidth = true,
+            FullScreen = false,
+            Position = DialogPosition.Center,
+            CloseButton = true
+        };
+        await _dialog.ShowAsync<CommandDialog>("CommandDialog", parameters, options);
+    }
+    #endregion Dialog
+}

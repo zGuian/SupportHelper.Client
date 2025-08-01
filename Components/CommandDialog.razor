@@ -1,0 +1,55 @@
+﻿@inject IMachineServices _services;
+
+@if(Machine is null)
+{
+    <MudText Typo="Typo.body1">Não encontrado valores para equipamento</MudText>
+}
+else
+{
+    <MudDialog>
+        <TitleContent>
+            @Machine.Hostname.ToUpper()
+        </TitleContent>
+        <DialogContent>
+            <MudGrid>
+                <MudItem xxl="6" >
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2">Solicita status atual do equipamento</MudText>
+                            <MudDivider />
+                            <br/>
+                        </MudCardContent>
+                        <MudCardActions Class="d-flex justify-center pa-0">
+                            <MudButton Color="Color.Primary" Variant="Variant.Filled">STATUS</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="() => MudDialog.Close()">Fechar</MudButton>
+        </DialogActions>
+    </MudDialog>
+}
+
+
+@code {
+    [CascadingParameter]
+    IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+    private MachineDto? Machine;
+
+    protected override Task OnInitializedAsync()
+    {
+        var response = _services.RequestOnlyMachineAsync(Id);
+        if (!response.IsSuccess)
+        {
+
+        }
+        Machine = response.Data;
+
+        return base.OnInitializedAsync();
+    }
+}
