@@ -1,4 +1,5 @@
 ﻿@inject IMachineServices _services;
+@inject ISnackbar _snackbar;
 
 @if(Machine is null)
 {
@@ -20,7 +21,31 @@ else
                             <br/>
                         </MudCardContent>
                         <MudCardActions Class="d-flex justify-center pa-0">
-                            <MudButton Color="Color.Primary" Variant="Variant.Filled">STATUS</MudButton>
+                            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="((e) => RequestStatus(Machine.Hostname))" Disabled="_buttonDisable">STATUS</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xxl="6">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2">Coleta as logs do SGP Client</MudText>
+                            <MudDivider />
+                            <br />
+                        </MudCardContent>
+                        <MudCardActions Class="d-flex justify-center pa-0">
+                            <MudButton Color="Color.Success" Variant="Variant.Filled">Coleta Logs</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+                <MudItem xxl="6">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudText Typo="Typo.body2">Reinicia o SGP Client do equipamento</MudText>
+                            <MudDivider />
+                            <br />
+                        </MudCardContent>
+                        <MudCardActions Class="d-flex justify-center pa-0">
+                            <MudButton Color="Color.Warning" Variant="Variant.Filled">Atualiza SGP</MudButton>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
@@ -41,15 +66,38 @@ else
     public string Id { get; set; } = string.Empty;
     private MachineDto? Machine;
 
-    protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        var response = _services.RequestOnlyMachineAsync(Id);
+        var response = await _services.RequestOnlyMachineAsync(Id);
         if (!response.IsSuccess)
         {
 
         }
         Machine = response.Data;
+    }
 
-        return base.OnInitializedAsync();
+    #region REQUEST STATUS
+
+    private bool _buttonDisable = false;
+    private async Task RequestStatus(string hostname)
+    {
+        _buttonDisable = true;
+        _snackbar.Add($"Solicitado status do equipamento: {hostname}");
+        var response = await _services.RequestStatusToMachineAsync(hostname);
+        if (!response.IsSuccess)
+        {
+            _snackbar.Add("Ocorreu um problema com a solicitação", Severity.Error, configure =>
+            {
+                configure.Icon = Icons.Material.Filled.DoDisturb;
+            });
+            _buttonDisable = false;
+            return;
+        }
+        _snackbar.Add("Informações atualizadas com sucesso!", Severity.Success, configure =>
+        {
+            configure.Icon = Icons.Material.Filled.Check;
+            _buttonDisable = false;
+        });
+#endregion REQUEST STATUS
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MudBlazor.Services;
+using SupportHelper.Blazor.Configuration.EnvironmentVariables;
 using SupportHelper.Blazor.Interfaces;
 using SupportHelper.Blazor.Services;
 using System.Net.Http.Headers;
@@ -12,6 +13,7 @@ namespace SupportHelper.Blazor
             Services(services);
             HttpClientServices(services);
             ServicesMudBlazor(services);
+            OptionsPattern(services);
             return services;
         }
 
@@ -24,7 +26,7 @@ namespace SupportHelper.Blazor
         {
             services.AddHttpClient("Default", opts =>
             {
-                opts.BaseAddress = new Uri("");
+                opts.BaseAddress = new Uri("http://localhost:5001");
                 opts.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("Application/json"));
             });
         }
@@ -35,6 +37,12 @@ namespace SupportHelper.Blazor
             {
                 
             });
+        }
+
+        private static void OptionsPattern(IServiceCollection services)
+        {
+            services.AddOptions<HttpClientOptions>()
+                .BindConfiguration(nameof(HttpClientOptions));
         }
     }
 }

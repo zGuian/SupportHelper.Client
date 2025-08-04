@@ -26,12 +26,12 @@
         <MudTd DataLabel="User">@context.CurrentUsername</MudTd>
         <MudTd DataLabel="Domain">@context.DomainName</MudTd>
         <MudTd DataLabel="UpTime">@context.UpTime</MudTd>
-        <MudTd DataLabel="Network">
+        <MudTd DataLabel="Detalhes">
             <MudButton OnClick="((e) => OpenDialogNetworkAsync(context.NetworkBoards))" 
                         Size="Size.Small" 
                         Variant="Variant.Filled"
-                        StartIcon="@Icons.Material.Filled.NetworkCheck">
-                Rede
+                       StartIcon="@Icons.Material.Filled.Source">
+                Detalhes
             </MudButton>
         </MudTd>
         <MudTd>
@@ -50,15 +50,13 @@
 </MudTable>
 
 @code {
-    private string _pageCommand = "/command";
-
     #region Table
     private IEnumerable<MachineDto>? Machines = [];
     private string searchString1 = "";
 
     protected override async Task OnInitializedAsync()
     {
-        var response = _services.RequestGetAllMachineAsync(1, 1);
+        var response = await _services.RequestGetAllMachineAsync(1, 1);
         if (!response.IsSuccess)
         {
 
