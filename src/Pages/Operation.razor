@@ -1,8 +1,14 @@
 ﻿@inject IMachineServices _services;
 @inject IDialogService _dialog;
 @inject NavigationManager _navigation;
-
+@inject ISnackbar _snackbar;
 @page "/operation"
+
+<style>
+    .apply_blur {
+        backdrop-filter: blur(10px);
+    }
+</style>
 
 <MudTable Items="@Machines" 
           Filter="new Func<MachineDto, bool>(FilterFunc1)" Row>
@@ -30,7 +36,7 @@
             <MudButton OnClick="((e) => OpenDialogNetworkAsync(context.NetworkBoards))" 
                         Size="Size.Small" 
                         Variant="Variant.Filled"
-                       StartIcon="@Icons.Material.Filled.Source">
+                        StartIcon="@Icons.Material.Filled.Source">
                 Detalhes
             </MudButton>
         </MudTd>
@@ -56,12 +62,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await _services.RequestGetAllMachineAsync(1, 1);
+        var response = await _services.RequestOnlyMachineAsync("SIDT0022A0D20");
         if (!response.IsSuccess)
         {
-
+            _snackbar.Add(response.Message, Severity.Error);
         }
-        Machines = response.Data;
+        var machines = new List<MachineDto>();
+        machines.Add(response.Data);
+        Machines = machines;
     }
 
     private bool FilterFunc1(MachineDto element) => FilterFunc(element, searchString1);
@@ -78,7 +86,7 @@
     }
     #endregion Table
 
-    #region Dialog
+    #region OpenNetwork
     private async Task OpenDialogNetworkAsync(IEnumerable<NetworkBoard> networkBoards)
     {
         var parameters = new DialogParameters<InfoNetworkDialog>
@@ -92,10 +100,16 @@
             FullWidth = true,
             FullScreen = false,
             Position = DialogPosition.Center,
+            CloseButton = false,
+            BackdropClick = false,
+            BackgroundClass = "apply_blur"
         };
-        await _dialog.ShowAsync<InfoNetworkDialog>("InfosNetwork", parameters, options);
+        await _dialog.ShowAsync<InfoNetworkDialog>("Informações de Rede", parameters, options);
     }
+    #endregion OpenNetwork
 
+    #region OpenCommand
+    bool _request = false;
     private async Task OpenDialogCommandAsync(string id)
     {
         var parameters = new DialogParameters<CommandDialog>
@@ -109,9 +123,11 @@
             FullWidth = true,
             FullScreen = false,
             Position = DialogPosition.Center,
-            CloseButton = true
+            CloseButton = false,
+            BackdropClick = false,
+            BackgroundClass = "apply_blur"
         };
-        await _dialog.ShowAsync<CommandDialog>("CommandDialog", parameters, options);
+        await _dialog.ShowAsync<CommandDialog>("Comando", parameters, options);
     }
-    #endregion Dialog
+    #endregion OpenCommand
 }

@@ -1,4 +1,4 @@
-﻿namespace SupportHelper.Blazor.Configuration.EnvironmentVariables
+﻿namespace SupportHelper.Blazor.Configuration.Environments
 {
     public class HttpClientOptions
     {

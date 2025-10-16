@@ -21,7 +21,7 @@ else
                             <br/>
                         </MudCardContent>
                         <MudCardActions Class="d-flex justify-center pa-0">
-                            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="((e) => RequestStatus(Machine.Hostname))" Disabled="_buttonDisable">STATUS</MudButton>
+                            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="((e) => OnRequestStatus(Machine.Hostname))" Disabled="_buttonDisable">STATUS</MudButton>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
@@ -52,7 +52,7 @@ else
             </MudGrid>
         </DialogContent>
         <DialogActions>
-            <MudButton OnClick="() => MudDialog.Close()">Fechar</MudButton>
+            <MudButton OnClick="((e) => _mudDialogInstance.Close())">Fechar</MudButton>
         </DialogActions>
     </MudDialog>
 }
@@ -60,11 +60,12 @@ else
 
 @code {
     [CascadingParameter]
-    IMudDialogInstance MudDialog { get; set; }
+    IMudDialogInstance _mudDialogInstance { get; set; }
 
     [Parameter]
     public string Id { get; set; } = string.Empty;
     private MachineDto? Machine;
+    private bool _buttonDisable = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -77,27 +78,49 @@ else
     }
 
     #region REQUEST STATUS
-
-    private bool _buttonDisable = false;
-    private async Task RequestStatus(string hostname)
+    private async Task OnRequestStatus(string hostname)
     {
-        _buttonDisable = true;
         _snackbar.Add($"Solicitado status do equipamento: {hostname}");
-        var response = await _services.RequestStatusToMachineAsync(hostname);
+        _mudDialogInstance.Close();
+        var response = await _services.RequestOnlyMachineAsync(hostname);
         if (!response.IsSuccess)
         {
             _snackbar.Add("Ocorreu um problema com a solicitação", Severity.Error, configure =>
             {
                 configure.Icon = Icons.Material.Filled.DoDisturb;
             });
-            _buttonDisable = false;
             return;
         }
         _snackbar.Add("Informações atualizadas com sucesso!", Severity.Success, configure =>
         {
             configure.Icon = Icons.Material.Filled.Check;
-            _buttonDisable = false;
         });
-#endregion REQUEST STATUS
     }
+    #endregion REQUEST STATUS
+
+    #region REQUEST UPDATE SGPCLIENT
+    private async Task OnRequestUpdateSgpClient(string hostname)
+    {
+        _buttonDisable = true;
+        _snackbar.Add($"Solicitado para reiniciar SGP Client no equipamento: {hostname.ToLower()}");
+        var response = await _services.RequestResetSgpClient(hostname);
+        if (!response.IsSuccess)
+        {
+            _snackbar.Add($"Ocorreu um erro: {response.Message}", Severity.Error, configure => 
+            {
+                configure.Icon = Icons.Material.Filled.DoDisturb;
+            });
+            _buttonDisable = false;
+            _mudDialogInstance.Close();
+            return;
+        }
+        _snackbar.Add("Informações atualizadas com sucesso!", Severity.Success, configure =>
+        {
+           configure.Icon = Icons.Material.Filled.Check;
+        });
+        _buttonDisable = false;
+        _mudDialogInstance.Close(DialogResult.Ok(true));
+        return;
+    }
+    #endregion REQUEST UPDATE SGPCLIENT
 }

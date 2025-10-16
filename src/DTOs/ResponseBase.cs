@@ -1,26 +1,35 @@
-﻿using System.Windows.Markup;
-
-namespace SupportHelper.Blazor.DTOs
+﻿namespace SupportHelper.Blazor.DTOs
 {
     public sealed class ResponseBase<T> where T : class
     {
         public bool IsSuccess { get; private set; }
         public T? Data { get; private set; }
+        public string? Message { get; private set; }
 
-        private ResponseBase(bool isSuccess, T? data)
+        private ResponseBase(bool isSuccess, T? data, string? message = null)
         {
             IsSuccess = isSuccess;
             Data = data;
+            Message = message;
         }
 
         public static ResponseBase<T> ReturnSuccess(T data)
         {
-            return new ResponseBase<T>(true, data);
+            if (data != null)
+            {
+                return new ResponseBase<T>(true, data);
+            }
+            return ReturnFalse();
         }
 
         public static ResponseBase<T> ReturnFalse()
         {
             return new ResponseBase<T>(false, null);
+        }
+
+        public static ResponseBase<T> ReturnFalse(string message)
+        {
+            return new ResponseBase<T>(false, null, message);
         }
     }
 }

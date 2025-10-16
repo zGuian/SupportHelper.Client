@@ -5,8 +5,8 @@ namespace SupportHelper.Blazor.Interfaces
 {
     public interface IMachineServices
     {
-        Task<ResponseBase<IEnumerable<MachineDto>>> RequestGetAllMachineAsync(int pageCount, int pageSize);
-        Task<ResponseBase<MachineDto>> RequestOnlyMachineAsync(string id);
-        Task<ResponseBase<MachineDto>> RequestStatusToMachineAsync(string hostname);
+        Task<ResponseBase<IEnumerable<MachineDto>>> RequestGetAllMachineAsync();
+        Task<ResponseBase<MachineDto>> RequestOnlyMachineAsync(string hostname);
+        Task<ResponseBase<string>> RequestResetSgpClient(string hostname);
     }
 }

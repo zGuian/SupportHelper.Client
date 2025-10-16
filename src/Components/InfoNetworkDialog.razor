@@ -27,24 +27,20 @@
         }
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel">Cancel</MudButton>
         <MudButton Color="Color.Primary" OnClick="Submit">OK</MudButton>
     </DialogActions>
 </MudDialog>
 
 @code {
-    #region Values Dialog
     [Parameter]
     public IEnumerable<NetworkBoard> NetworkBoards { get; set; } = [];
-    #endregion Values Dialog
 
     #region Dialog
     [CascadingParameter]
-    private IMudDialogInstance MudDialog { get; set; }
+    private IMudDialogInstance _mudDialogInstance { get; set; }
 
-    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    private void Submit() => _mudDialogInstance.Close(DialogResult.Ok(true));
 
-    private void Cancel() => MudDialog.Cancel();
-
+    private void Cancel() => _mudDialogInstance.Cancel();
     #endregion Dialog
 }

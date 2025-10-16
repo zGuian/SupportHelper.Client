@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
-using SupportHelper.Blazor.Configuration.EnvironmentVariables;
+using Newtonsoft.Json;
+using SupportHelper.Blazor.Configuration.Environments;
 using SupportHelper.Blazor.DTOs;
 using SupportHelper.Blazor.DTOs.Machines;
 using SupportHelper.Blazor.Interfaces;
-using SupportHelper.Blazor.ValueObjects;
 
 namespace SupportHelper.Blazor.Services
 {
@@ -15,77 +15,54 @@ namespace SupportHelper.Blazor.Services
         public MachineServices(IHttpClientFactory httpFactory, IOptions<HttpClientOptions> httpClientOptions)
         {
             _httpClientOptions = httpClientOptions.Value;
-            _httpClient = httpFactory.CreateClient(_httpClientOptions.NameFactory);
+            _httpClient = httpFactory.CreateClient("Default");
         }
 
-        public async Task<ResponseBase<IEnumerable<MachineDto>>> RequestGetAllMachineAsync(int pageCount, int pageSize)
+        public async Task<ResponseBase<IEnumerable<MachineDto>>> RequestGetAllMachineAsync()
         {
             try
             {
-                var task = await Task.Run(() =>
+                var response = await _httpClient.GetAsync("api/v1/Machines");
+                if (!response.IsSuccessStatusCode)
                 {
-                    var list = new List<MachineDto>();
-                    for (int i = 1; i < 101; i++)
-                    {
-                        list.Add(MachineDto.Create(true, $"M154DX00{i}", true, i.ToString(), i.ToString(), i.ToString(), [
-                            NetworkBoard.Create(i.ToString(), i.ToString(), i.ToString(), i.ToString(), true)], i.ToString(), i.ToString()));
-                    }
-                    return ResponseBase<IEnumerable<MachineDto>>.ReturnSuccess(list);
-                });
-                return task;
-                //var response = await _httpClient.GetAsync("api/v1/Machines");
-                //if (!response.IsSuccessStatusCode)
-                //{
-                //    throw new Exception();
-                //}
-                //var page =  await JsonSerializer.DeserializeAsync<IEnumerable<GetAllMachineDto<MachineDto>>>(
-                //    await response.Content.ReadAsStreamAsync()) ?? throw new Exception();
-                //return ResponseBase<IEnumerable<MachineDto>>.ReturnSuccess(page.Select(x => x.Datas));
+                    return ResponseBase<IEnumerable<MachineDto>>.ReturnFalse("Não foi possivel fazer a chamada da API");
+                }
+                var jsonString = await response.Content.ReadAsStringAsync();
+                var page = JsonConvert.DeserializeObject<GetAllMachineDto<IEnumerable<MachineDto>>>(jsonString);
+                if (page != null && page.Datas != null)
+                {
+                    return ResponseBase<IEnumerable<MachineDto>>.ReturnSuccess(page.Datas);
+                }
+                return ResponseBase<IEnumerable<MachineDto>>.ReturnFalse();
             }
             catch (Exception ex)
             {
-
-                throw;
+                return ResponseBase<IEnumerable<MachineDto>>.ReturnFalse(ex.Message);
             }
         }
 
-        public async Task<ResponseBase<MachineDto>> RequestOnlyMachineAsync(string id)
+        public async Task<ResponseBase<MachineDto>> RequestOnlyMachineAsync(string hostname)
         {
             try
             {
-                var task = await Task.Run(() =>
+                var response = await _httpClient.GetAsync($"api/v1/Machine/StatusMachine/{hostname}");
+                if (!response.IsSuccessStatusCode)
                 {
-                    return ResponseBase<MachineDto>.ReturnSuccess(MachineDto.Create(true, "M154DSX0028304", true,
-                    "Guian", "TBAD", "Win11", [NetworkBoard.Create("Porta RJ45", "10.162.167.28", null, "AC-DF-12-GT-OP", true)],
-                    "10:29:20", "24/04/2025"));
-                });
-
-                return task;
-                //var response = await _httpClient.GetAsync($"api/v1/Machines/{id}");
-                //if (!response.IsSuccessStatusCode)
-                //{
-                //    throw new Exception();
-                //}
-                //var machine = await JsonSerializer.DeserializeAsync<MachineDto>(
-                //    await response.Content.ReadAsStreamAsync()) ?? throw new Exception();
-                //return ResponseBase<MachineDto>.ReturnSuccess(machine);
+                    return ResponseBase<MachineDto>.ReturnFalse();
+                }
+                var json = await response.Content.ReadAsStringAsync();
+                var machine = JsonConvert.DeserializeObject<MachineDto>(json) ?? throw new Exception();
+                return ResponseBase<MachineDto>.ReturnSuccess(machine);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return ResponseBase<MachineDto>.ReturnFalse(ex.Message);
             }
         }
 
-        public Task<ResponseBase<MachineDto>> RequestStatusToMachineAsync(string hostname)
+        public Task<ResponseBase<string>> RequestResetSgpClient(string hostname)
         {
-            return Task.Run(async () =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                return ResponseBase<MachineDto>.ReturnSuccess(MachineDto.Create(true, "M154DSX0028304", true,
-                    "Guian", "TBAD", "Win11", [NetworkBoard.Create("Porta RJ45", "10.162.167.28", null, "AC-DF-12-GT-OP", true)],
-                    "10:29:20", "24/04/2025"));
-            });
+            throw new NotImplementedException();
         }
     }
 }
